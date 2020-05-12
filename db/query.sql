@@ -1,8 +1,21 @@
+select * from (
+select y.id ,y.event_name, y.people_count ,
+ case when y.people_count >=100 and 
+ y.Lead_people_count>=100 and
+ y.Lead_people_count2 >=100 then 1 
 
-select distinct event_name from ( 
-select case when y.event_name = y.next_event_id and y.next_event_id=y.next_event_id_2 and y.event_name = y.next_event_id_2 then 1 else 0 end as ind,
-y.event_name, y.next_event_id,y.next_event_id_2, y.people_count 
+ when y.lag_people_count >=100 and
+y.lag_people_count2 >=100 and
+ y.people_count>=100 then 1 
+ when  y.people_count >=100 and 
+ y.Lead_people_count>=100 and   y.lag_people_count >=100  then 1 else 0 end as ind 
+ 
 from (
-select z.event_name , z.next_event_id, LEAD(z.event_name) over (ORDER BY z.id) AS next_event_id_2 ,z.people_count from ( 
-select event_name,id ,  LEAD(event_name) over (ORDER BY id) AS next_event_id,people_count from project_loylty.test_Data1  ) z
-  )y )x where x.ind=1 and x.people_count>100;
+select z.id ,z.event_name, z.people_count , z.Lead_people_count ,
+LEAD(z.Lead_people_count) over (ORDER BY z.id) AS Lead_people_count2 ,z.lag_people_count, lag(z.lag_people_count) over (ORDER BY z.id) AS lag_people_count2 from ( 
+select event_name,id , people_count, LEAD(people_count) over (ORDER BY id) AS Lead_people_count , LAG(people_count) OVER  (ORDER BY id) AS lag_people_count   
+
+
+from  L_EWW_POC_DM.event_details )z
+
+) y ) x where x.ind =1
